@@ -1,0 +1,60 @@
+version: "3.9"
+
+services:
+  postgres:
+    image: postgres:16
+    container_name: launchly-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: launchly
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+  redis:
+    image: redis:7
+    container_name: launchly-redis
+    restart: unless-stopped
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+  nango-db:
+    image: postgres:16
+    container_name: launchly-nango-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: nango
+      POSTGRES_PASSWORD: nango
+      POSTGRES_DB: nango
+    ports:
+      - "5433:5432"
+    volumes:
+      - nango_postgres_data:/var/lib/postgresql/data
+
+  nango:
+    image: nangohq/nango:latest
+    container_name: launchly-nango
+    restart: unless-stopped
+    depends_on:
+      - nango-db
+    ports:
+      - "3003:3003"
+      - "3009:3009"
+    environment:
+      NANGO_DATABASE_URL: postgresql://nango:nango@nango-db:5432/nango
+      NANGO_ENCRYPTION_KEY: ${NANGO_ENCRYPTION_KEY}
+      NANGO_JWT_SECRET: ${NANGO_JWT_SECRET}
+      NANGO_SERVER_URL: http://localhost:3003
+      NANGO_PUBLIC_CONNECT_URL: http://localhost:3009
+      FLAG_SERVE_CONNECT_UI: "true"
+      NANGO_PORT: 3003
+
+volumes:
+  postgres_data:
+  redis_data:
+  nango_postgres_data:

@@ -1,0 +1,83 @@
+# Firebase Data Connect Configuration for Zenith
+# Optimized Schema for Production
+
+apiVersion: dataconnect.googleapis.com/v1alpha
+kind: ConnectorConfig
+metadata:
+  name: zenith-connector
+spec:
+  schema:
+    - name: User
+      table: users
+      fields:
+        firebaseAuthUid: String! @primary
+        email: String!
+        createdAt: Timestamp!
+        credits: Int!
+        displayName: String
+        photoUrl: String
+        lastLoginAt: Timestamp
+        businessPlans: [BusinessPlan] @relation(field: "user")
+        contentGenerations: [ContentGeneration] @relation(field: "user")
+        chatSessions: [AIChatSession] @relation(field: "user")
+        creditTransactions: [CreditTransaction] @relation(field: "user")
+
+    - name: BusinessPlan
+      table: business_plans
+      fields:
+        id: String! @primary
+        user: User! @foreign(ref: "User.firebaseAuthUid")
+        title: String!
+        createdAt: Timestamp!
+        updatedAt: Timestamp!
+        content: String!
+        description: String
+        industry: String
+        status: String
+        chatMessages: [AIChatMessage] @relation(field: "")
+
+    - name: ContentGeneration
+      table: content_generations
+      fields:
+        id: String! @primary
+        user: User! @foreign(ref: "User.firebaseAuthUid")
+        type: String! # "ad", "website", "store", "social_post"
+        prompt: String!
+        generatedText: String!
+        createdAt: Timestamp!
+        title: String
+        usageCredits: Int
+        status: String
+
+    - name: AIChatSession
+      table: ai_chat_sessions
+      fields:
+        id: String! @primary
+        user: User! @foreign(ref: "User.firebaseAuthUid")
+        title: String!
+        createdAt: Timestamp!
+        updatedAt: Timestamp!
+        lastMessageAt: Timestamp
+        messages: [AIChatMessage] @relation(field: "session")
+
+    - name: AIChatMessage
+      table: ai_chat_messages
+      fields:
+        id: String! @primary
+        session: AIChatSession! @foreign(ref: "AIChatSession.id")
+        user: User! @foreign(ref: "User.firebaseAuthUid")
+        role: String! # "user" or "assistant"
+        message: String!
+        createdAt: Timestamp!
+        usageCredits: Int
+
+    - name: CreditTransaction
+      table: credit_transactions
+      fields:
+        id: String! @primary
+        user: User! @foreign(ref: "User.firebaseAuthUid")
+        type: String! # "purchase", "usage", "refund"
+        amount: Int!
+        createdAt: Timestamp!
+        description: String
+        associatedEntityId: String

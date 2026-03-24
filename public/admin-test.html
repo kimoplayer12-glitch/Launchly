@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Credits Admin Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 600px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+        }
+        .form-group {
+            margin: 15px 0;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #555;
+            font-weight: bold;
+        }
+        input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        button {
+            background: #4CAF50;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            width: 100%;
+        }
+        button:hover {
+            background: #45a049;
+        }
+        .response {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-left: 4px solid #4CAF50;
+            border-radius: 4px;
+            display: none;
+        }
+        .response.show {
+            display: block;
+        }
+        .response.error {
+            border-left-color: #f44336;
+            background: #ffebee;
+        }
+        pre {
+            margin: 0;
+            overflow-x: auto;
+            font-size: 12px;
+        }
+        .loading {
+            display: none;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎯 Add Credits - Admin Tool</h1>
+        <div class="form-group">
+            <label for="displayName">User Display Name:</label>
+            <input type="text" id="displayName" placeholder="e.g., karim moh" value="karim moh">
+        </div>
+        <div class="form-group">
+            <label for="amount">Credits to Add:</label>
+            <input type="number" id="amount" placeholder="e.g., 500" value="500" min="1">
+        </div>
+        <div class="form-group">
+            <label for="adminKey">Admin Key:</label>
+            <input type="password" id="adminKey" placeholder="Enter admin key" value="launchforge-admin-secret-2024">
+        </div>
+        <button onclick="addCredits()">Add Credits</button>
+        <div id="loading" class="loading">Processing...</div>
+        <div id="response" class="response">
+            <h3>Response:</h3>
+            <pre id="responseContent"></pre>
+        </div>
+    </div>
+
+    <script>
+        async function addCredits() {
+            const displayName = document.getElementById('displayName').value;
+            const amount = parseInt(document.getElementById('amount').value);
+            const adminKey = document.getElementById('adminKey').value;
+
+            if (!displayName || !amount) {
+                alert('Please fill in all fields');
+                return;
+            }
+
+            const loading = document.getElementById('loading');
+            const response = document.getElementById('response');
+            const responseContent = document.getElementById('responseContent');
+
+            loading.style.display = 'block';
+            response.classList.remove('show');
+
+            try {
+                console.log('Calling API...', { displayName, amount });
+                const res = await fetch('/api/admin/add-credits', {
+                    method: 'POST',
+                    headers: {
+                        'x-admin-key': adminKey,
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ displayName, amount }),
+                });
+
+                console.log('Response status:', res.status);
+                const data = await res.json();
+                console.log('Response data:', data);
+                
+                response.classList.add('show');
+                if (!res.ok) {
+                    response.classList.add('error');
+                }
+                responseContent.textContent = JSON.stringify(data, null, 2);
+            } catch (error) {
+                console.error('Fetch error:', error);
+                response.classList.add('show', 'error');
+                responseContent.textContent = `Error: ${error.message}\n\nMake sure:\n1. The server is running on http://localhost:8080\n2. The admin key is correct\n3. The user exists in the database`;
+            } finally {
+                loading.style.display = 'none';
+            }
+        }
+
+        // Allow Enter key to submit
+        document.getElementById('amount').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') addCredits();
+        });
+    </script>
+</body>
+</html>

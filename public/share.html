@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Share Link - LaunchForge</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            padding: 40px;
+            max-width: 500px;
+            width: 100%;
+            text-align: center;
+        }
+        
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 28px;
+        }
+        
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        
+        #qrcode {
+            margin: 30px auto;
+            padding: 20px;
+            background: #f5f5f5;
+            border-radius: 10px;
+            display: inline-block;
+        }
+        
+        .link-section {
+            margin-top: 30px;
+            padding-top: 30px;
+            border-top: 1px solid #eee;
+        }
+        
+        .link-label {
+            color: #999;
+            font-size: 12px;
+            text-transform: uppercase;
+            margin-bottom: 10px;
+            letter-spacing: 1px;
+        }
+        
+        .link-display {
+            background: #f9f9f9;
+            padding: 15px;
+            border-radius: 8px;
+            word-break: break-all;
+            color: #333;
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 13px;
+            margin-bottom: 15px;
+            line-height: 1.6;
+        }
+        
+        .copy-btn {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 10px;
+        }
+        
+        .copy-btn:hover {
+            background: #5568d3;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.2);
+        }
+        
+        .copy-btn.copied {
+            background: #48bb78;
+        }
+        
+        .open-btn {
+            background: #764ba2;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            width: 100%;
+        }
+        
+        .open-btn:hover {
+            background: #6a3d91;
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(118, 75, 162, 0.2);
+        }
+        
+        .info-box {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 20px;
+            text-align: left;
+            font-size: 13px;
+            color: #555;
+        }
+        
+        .info-box strong {
+            color: #333;
+        }
+        
+        .status {
+            margin-top: 10px;
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        
+        .status.online {
+            background: #d4edda;
+            color: #155724;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🚀 LaunchForge</h1>
+        <p class="subtitle">Share this link to access from anywhere</p>
+        
+        <div id="qrcode"></div>
+        
+        <div class="link-section">
+            <div class="link-label">Your Network URL</div>
+            <div class="link-display" id="linkDisplay">Loading...</div>
+            <button class="copy-btn" onclick="copyLink()">📋 Copy Link</button>
+            <button class="open-btn" onclick="openLink()">🔗 Open Website</button>
+        </div>
+        
+        <div class="info-box">
+            <strong>📱 How to use:</strong>
+            <br><br>
+            ✓ <strong>From your phone:</strong> Scan the QR code or open the link above
+            <br><br>
+            ✓ <strong>Same network:</strong> This link works on any device connected to your WiFi
+            <br><br>
+            ✓ <strong>Admin test:</strong> Go to <code>/admin-test.html</code> to test credit system
+        </div>
+        
+        <div class="status online">
+            ✓ Server is running and ready
+        </div>
+    </div>
+
+    <script>
+        const getNetworkUrl = () => {
+            return `http://192.168.1.58:8080`;
+        };
+        
+        const initQR = () => {
+            const url = getNetworkUrl();
+            const qrcodeDiv = document.getElementById('qrcode');
+            qrcodeDiv.innerHTML = ''; // Clear previous
+            new QRCode(qrcodeDiv, {
+                text: url,
+                width: 200,
+                height: 200,
+                colorDark: '#000000',
+                colorLight: '#ffffff',
+                correctLevel: QRCode.CorrectLevel.H
+            });
+            
+            document.getElementById('linkDisplay').textContent = url;
+        };
+        
+        const copyLink = () => {
+            const url = getNetworkUrl();
+            navigator.clipboard.writeText(url).then(() => {
+                const btn = event.target;
+                btn.classList.add('copied');
+                btn.textContent = '✓ Copied!';
+                setTimeout(() => {
+                    btn.classList.remove('copied');
+                    btn.textContent = '📋 Copy Link';
+                }, 2000);
+            });
+        };
+        
+        const openLink = () => {
+            window.open(getNetworkUrl(), '_blank');
+        };
+        
+        // Initialize on load
+        window.addEventListener('load', initQR);
+    </script>
+</body>
+</html>

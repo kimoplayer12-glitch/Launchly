@@ -1,0 +1,52 @@
+# Zenith Queries
+
+query GetUser($firebaseAuthUid: String!) @auth(level: USER, insecureReason: "User queries their own profile") {
+  users(where: { firebaseAuthUid: { eq: $firebaseAuthUid } }) {
+    firebaseAuthUid
+    email
+    createdAt
+    credits
+    displayName
+    photoUrl
+    lastLoginAt
+  }
+}
+
+query GetUserWithData($firebaseAuthUid: String!) @auth(level: USER, insecureReason: "User queries their own data including plans and credits") {
+  users(where: { firebaseAuthUid: { eq: $firebaseAuthUid } }) {
+    firebaseAuthUid
+    email
+    credits
+    displayName
+    businessPlans_on_user {
+      id
+      title
+      status
+      createdAt
+    }
+    contentGenerations_on_user {
+      id
+      type
+      title
+      status
+      createdAt
+    }
+    creditTransactions_on_user {
+      id
+      type
+      amount
+      createdAt
+    }
+  }
+}
+
+mutation CreateUser($firebaseAuthUid: String!, $email: String!, $displayName: String, $photoUrl: String) @auth(level: USER, insecureReason: "Creating new user profile on signup") {
+  user_insert(data: {
+    firebaseAuthUid: $firebaseAuthUid
+    email: $email
+    displayName: $displayName
+    photoUrl: $photoUrl
+    credits: 50
+    createdAt_expr: "request.time"
+  })
+}

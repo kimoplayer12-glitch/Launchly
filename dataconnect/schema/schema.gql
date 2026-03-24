@@ -1,0 +1,87 @@
+type User @table {
+  firebaseAuthUid: String!
+  email: String!
+  createdAt: Timestamp!
+  credits: Int!
+  displayName: String
+  photoUrl: String
+  lastLoginAt: Timestamp
+}
+
+type BusinessPlan @table {
+  id: String!
+  user: User!
+  title: String!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  content: String!
+  description: String
+  industry: String
+  status: String
+}
+
+type ContentGeneration @table {
+  id: String!
+  user: User!
+  type: String!
+  prompt: String!
+  generatedText: String!
+  createdAt: Timestamp!
+  title: String
+  usageCredits: Int
+  status: String
+}
+
+type AiChatSession @table {
+  id: String!
+  user: User!
+  title: String!
+  createdAt: Timestamp!
+  updatedAt: Timestamp!
+  lastMessageAt: Timestamp
+}
+
+type AiChatMessage @table {
+  id: String!
+  session: AiChatSession!
+  user: User!
+  role: String!
+  message: String!
+  createdAt: Timestamp!
+  usageCredits: Int
+}
+
+type CreditTransaction @table {
+  id: String!
+  user: User!
+  type: String!
+  amount: Int!
+  createdAt: Timestamp!
+  description: String
+  associatedEntityId: String
+}
+
+type SocialAccount @table {
+  id: String!
+  user: User!
+  platform: String! # "instagram", "twitter", "tiktok"
+  username: String!
+  accessToken: String!
+  refreshToken: String
+  connectedAt: Timestamp!
+  expiresAt: Timestamp
+}
+
+type ScheduledPost @table {
+  id: String!
+  user: User!
+  platform: String! # "instagram", "twitter", "tiktok"
+  caption: String!
+  mediaUrl: String
+  mediaType: String # "image" or "video"
+  scheduledFor: Timestamp!
+  status: String! # "scheduled", "posted", "failed"
+  creditsCost: Int!
+  createdAt: Timestamp!
+  postedAt: Timestamp
+}

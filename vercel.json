@@ -1,0 +1,39 @@
+{
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist/spa",
+  "framework": "vite",
+  "rewrites": [
+    {
+      "source": "/api/auth/login",
+      "destination": "/api/index?route=auth/login"
+    },
+    {
+      "source": "/api/auth/signup",
+      "destination": "/api/index?route=auth/signup"
+    },
+    {
+      "source": "/api/auth/google",
+      "destination": "/api/index?route=auth/google"
+    },
+    {
+      "source": "/api/user/me",
+      "destination": "/api/index?route=user/me"
+    },
+    {
+      "source": "/api/onboarding",
+      "destination": "/api/index?route=onboarding"
+    },
+    {
+      "source": "/api/growth-plan",
+      "destination": "/api/index?route=growth-plan"
+    },
+    {
+      "source": "/api/admin/trigger-daily-motivation",
+      "destination": "/api/index?route=admin/trigger-daily-motivation"
+    },
+    {
+      "source": "/api/ping",
+      "destination": "/api/index?route=ping"
+    }
+  ]
+}

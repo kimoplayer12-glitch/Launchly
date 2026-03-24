@@ -1,0 +1,130 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum WorkflowStatus {
+  DRAFT
+  PUBLISHED
+}
+
+enum ExecutionStatus {
+  RUNNING
+  SUCCESS
+  FAILED
+}
+
+model User {
+  id                  String           @id @default(uuid())
+  email               String           @unique
+  password            String
+  onboardingCompleted Boolean          @default(false)
+  createdAt           DateTime         @default(now())
+  businessProfile     BusinessProfile?
+  growthPlan          GrowthPlan?
+}
+
+model BusinessProfile {
+  id                        String   @id @default(uuid())
+  userId                    String   @unique
+  niche                     String
+  currentMonthlyRevenue     Float?
+  businessStage             String
+  primaryRevenueSource      String?
+  targetMarketCountry       String?
+  monthlyBudget             Float?
+  teamSize                  Int?
+  hoursPerDayAvailable      Float?
+  skills                    String[]
+  threeMonthRevenueGoal     Float?
+  oneYearRevenueGoal        Float?
+  biggestObstacle           String?
+  riskTolerance             String
+  wantsBrutalAccountability Boolean
+  createdAt                 DateTime @default(now())
+  user                      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model GrowthPlan {
+  id          String   @id @default(uuid())
+  userId      String   @unique
+  content     Json
+  generatedAt DateTime @default(now())
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Workflow {
+  id              String          @id @default(cuid())
+  userId          String
+  name            String
+  status          WorkflowStatus  @default(DRAFT)
+  draftGraphJson  Json?
+  webhookSecret   String?
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+
+  versions        WorkflowVersion[]
+
+  @@index([userId])
+}
+
+model WorkflowVersion {
+  id            String    @id @default(cuid())
+  workflowId    String
+  versionNumber Int
+  graphJson     Json
+  createdAt     DateTime  @default(now())
+  publishedAt   DateTime?
+
+  workflow      Workflow  @relation(fields: [workflowId], references: [id], onDelete: Cascade)
+  executions    Execution[]
+
+  @@unique([workflowId, versionNumber])
+  @@index([workflowId])
+}
+
+model Execution {
+  id                 String          @id @default(cuid())
+  workflowVersionId  String
+  status             ExecutionStatus @default(RUNNING)
+  startedAt          DateTime        @default(now())
+  finishedAt         DateTime?
+  triggerType        String
+  triggerPayloadJson Json
+
+  workflowVersion    WorkflowVersion @relation(fields: [workflowVersionId], references: [id], onDelete: Cascade)
+  steps              ExecutionStep[]
+
+  @@index([workflowVersionId])
+}
+
+model ExecutionStep {
+  id          String          @id @default(cuid())
+  executionId String
+  nodeId      String
+  status      ExecutionStatus @default(RUNNING)
+  startedAt   DateTime        @default(now())
+  finishedAt  DateTime?
+  inputJson   Json?
+  outputJson  Json?
+  errorJson   Json?
+
+  execution   Execution       @relation(fields: [executionId], references: [id], onDelete: Cascade)
+
+  @@index([executionId])
+}
+
+model Credential {
+  id            String   @id @default(cuid())
+  userId        String
+  name          String
+  type          String
+  encryptedJson String
+  createdAt     DateTime @default(now())
+
+  @@index([userId])
+}
