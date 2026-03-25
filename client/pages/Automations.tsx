@@ -72,7 +72,7 @@ export default function Automations() {
 
       <div className="grid gap-4">
         {loading && (
-          <div className="clean-card p-6 text-foreground/70">Loading workflows…</div>
+          <div className="clean-card p-6 text-foreground/70">Loading workflows...</div>
         )}
         {error && (
           <div className="clean-card p-6 text-red-400">{error}</div>

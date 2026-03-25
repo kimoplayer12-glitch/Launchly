@@ -75,7 +75,7 @@ export default function Integrations() {
               Lets your users connect their Stripe account to receive payments. In demo mode, this just simulates a connection.
             </p>
             <Button onClick={connectStripe} disabled={busy === "stripe"}>
-              {busy === "stripe" ? "Opening…" : "Connect Stripe"}
+              {busy === "stripe" ? "Opening..." : "Connect Stripe"}
             </Button>
           </CardContent>
         </Card>
@@ -95,7 +95,7 @@ export default function Integrations() {
                 placeholder="mystore.myshopify.com"
               />
               <Button onClick={connectShopify} disabled={busy === "shopify"}>
-                {busy === "shopify" ? "Opening…" : "Connect"}
+                {busy === "shopify" ? "Opening..." : "Connect"}
               </Button>
             </div>
           </CardContent>

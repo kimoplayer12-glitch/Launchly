@@ -165,7 +165,7 @@ export default function WebsiteGenerator() {
                 <textarea
                   value={prompt}
                   onChange={(e) => setPrompt(e.target.value)}
-                  placeholder="Describe your business… e.g. A futuristic fitness app for busy professionals"
+                  placeholder="Describe your business... e.g. A futuristic fitness app for busy professionals"
                   className="w-full p-4 rounded-xl bg-black/20 text-lg min-h-[120px]"
                 />
               </div>
@@ -200,7 +200,7 @@ export default function WebsiteGenerator() {
                   }}
                   disabled={busy}
                   className="btn-neon flex-1 py-3 rounded-lg inline-flex items-center justify-center gap-2 font-medium">
-                  {busy ? '🚀 Building your website…' : '✨ Generate My Website'}
+                  {busy ? '🚀 Building your website...' : '✨ Generate My Website'}
                 </button>
                 <button onClick={() => { setBrandName(''); setTagline(''); setPrompt(''); setPreviewUrl(null); setOut(null); }} className="btn-glass px-4">Reset</button>
               </div>
@@ -208,9 +208,9 @@ export default function WebsiteGenerator() {
               {/* Progress */}
               {progressStep > 0 && (
                 <div className="mt-4 text-sm text-foreground/70">
-                  <div>{progressStep >= 1 ? '✔️ Writing content…' : 'Writing content…'}</div>
-                  <div>{progressStep >= 2 ? '✔️ Designing layout…' : 'Designing layout…'}</div>
-                  <div>{progressStep >= 3 ? '✔️ Preparing preview…' : 'Preparing preview…'}</div>
+                  <div>{progressStep >= 1 ? '✔️ Writing content...' : 'Writing content...'}</div>
+                  <div>{progressStep >= 2 ? '✔️ Designing layout...' : 'Designing layout...'}</div>
+                  <div>{progressStep >= 3 ? '✔️ Preparing preview...' : 'Preparing preview...'}</div>
                 </div>
               )}
 

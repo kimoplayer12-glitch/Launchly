@@ -1,299 +1,178 @@
-import { useState, useEffect } from "react";
-import FooterLinks from "@/components/FooterLinks";
-import { useNavigate } from "react-router-dom";
+import { useEffect, useState } from "react";
+import type { GrowthPlanContent } from "@shared/onboarding";
 import GlassCard from "@/components/GlassCard";
-import { useFirebaseAuth } from "@/hooks/use-firebase-auth";
-import { Mail, User, Lock, Camera, Save, X } from "lucide-react";
+import FooterLinks from "@/components/FooterLinks";
+import {
+Accordion,
+AccordionContent,
+AccordionItem,
+AccordionTrigger,
+} from "@/components/ui/accordion";
+import { authFetch, readJson } from "@/lib/api-client";
 import { toast } from "@/components/ui/use-toast";
+import { useNavigate } from "react-router-dom";
 
-export default function Settings() {
-  const navigate = useNavigate();
-  const { user, loading, isAuthenticated } = useFirebaseAuth();
-  const [displayName, setDisplayName] = useState("");
-  const [email, setEmail] = useState("");
-  const [currentPassword, setCurrentPassword] = useState("");
-  const [newPassword, setNewPassword] = useState("");
-  const [confirmPassword, setConfirmPassword] = useState("");
-  const [saving, setSaving] = useState(false);
-  const [showPasswordForm, setShowPasswordForm] = useState(false);
+type GrowthPlanResponse = {
+growthPlan: GrowthPlanContent;
+generatedAt: string;
+};
 
-  useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      navigate("/login");
-    }
-    if (user) {
-      setDisplayName(user.displayName || "");
-      setEmail(user.email || "");
-    }
-  }, [user, loading, isAuthenticated, navigate]);
+export default function GrowthPlan() {
+const navigate = useNavigate();
+const [loading, setLoading] = useState(true);
+const [error, setError] = useState<string | null>(null);
+const [data, setData] = useState<GrowthPlanResponse | null>(null);
 
-  const handleSaveProfile = async () => {
-    setSaving(true);
-    try {
-      // Here you would call an API to update the user profile
-      // For now, we'll just show a success message
-      toast({
-        title: "Profile Updated",
-        description: "Your profile has been successfully updated.",
-      });
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to update profile",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
+useEffect(() => {
+const fetchPlan = async () => {
+setLoading(true);
+try {
+const response = await authFetch("/api/growth-plan");
+const body = await readJson(response);
+if (!response.ok) throw new Error(body?.error || "Failed to load growth plan");
+setData(body as GrowthPlanResponse);
+setError(null);
+} catch (err) {
+const message = err instanceof Error ? err.message : "Failed to load growth plan";
+setError(message);
+toast({ title: "Unable to load growth plan", description: message, variant: "destructive" });
+} finally {
+setLoading(false);
+}
+};
+fetchPlan();
+}, []);
 
-  const handleChangePassword = async () => {
-    if (newPassword !== confirmPassword) {
-      toast({
-        title: "Error",
-        description: "Passwords do not match",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    setSaving(true);
-    try {
-      // Here you would call an API to change the password
-      toast({
-        title: "Password Updated",
-        description: "Your password has been successfully changed.",
-      });
-      setCurrentPassword("");
-      setNewPassword("");
-      setConfirmPassword("");
-      setShowPasswordForm(false);
-    } catch (error) {
-      toast({
-        title: "Error",
-        description: "Failed to change password",
-        variant: "destructive",
-      });
-    } finally {
-      setSaving(false);
-    }
-  };
-
-  if (loading || !isAuthenticated) {
-    return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-spin rounded-full h-12 w-12 border border-neon-cyan border-t-transparent"></div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="page-shell">
-      <div className="max-w-2xl mx-auto">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold mb-2">Account Settings</h1>
-          <p className="text-foreground/60">Manage your profile and preferences</p>
-        </div>
-        <div className="mb-8">
-          <button
-            onClick={() => navigate("/settings/connections")}
-            className="btn-secondary-clean"
-          >
-            Manage Connections
-          </button>
-        </div>
-
-        {/* Profile Card */}
-        <GlassCard variant="dark" className="mb-6 border-white/20">
-          <div className="space-y-6">
-            <div>
-              <h2 className="text-xl font-bold mb-4">Profile Information</h2>
-            </div>
-
-            {/* Avatar */}
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 rounded-lg bg-gradient-to-br from-neon-cyan to-neon-purple flex items-center justify-center">
-              {user?.photoURL ? (
-                <img
-                  src={user.photoURL}
-                  alt={displayName}
-                  className="w-full h-full rounded-lg object-cover"
-                />
-              ) : (
-                <User className="w-8 h-8 text-black" />
-              )}
-            </div>
-              <button
-                className="flex items-center gap-2 px-4 py-2 bg-white/10 hover:bg-white/20 rounded-lg transition-colors"
-                onClick={() =>
-                  toast({
-                    title: "Avatar update",
-                    description: "Avatar uploads are coming soon.",
-                  })
-                }
-              >
-                <Camera className="w-4 h-4" />
-                <span className="text-sm font-medium">Change Avatar</span>
-              </button>
-            </div>
-
-            {/* Display Name */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Display Name</label>
-              <div className="relative">
-                <User className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-                <input
-                  type="text"
-                  value={displayName}
-                  onChange={(e) => setDisplayName(e.target.value)}
-                  placeholder="Your name"
-                  className="input-glass w-full pl-12"
-                />
-              </div>
-            </div>
-
-            {/* Email */}
-            <div className="space-y-2">
-              <label className="text-sm font-medium text-foreground/80">Email Address</label>
-              <div className="relative">
-                <Mail className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-                <input
-                  type="email"
-                  value={email}
-                  disabled
-                  className="input-glass w-full pl-12 opacity-60 cursor-not-allowed"
-                />
-              </div>
-              <p className="text-xs text-foreground/60">Email cannot be changed</p>
-            </div>
-
-            {/* Save Button */}
-            <button
-              onClick={handleSaveProfile}
-              disabled={saving}
-              className="w-full btn-neon py-3 rounded-lg flex items-center justify-center gap-2 disabled:opacity-50"
-            >
-              <Save className="w-4 h-4" />
-              {saving ? "Saving..." : "Save Changes"}
-            </button>
-          </div>
-        </GlassCard>
-
-        {/* Password Card */}
-        <GlassCard variant="dark" className="mb-6 border-white/20">
-          <div className="space-y-6">
-            <div className="flex items-center justify-between">
-              <h2 className="text-xl font-bold">Security</h2>
-              {showPasswordForm && (
-                <button
-                  onClick={() => setShowPasswordForm(false)}
-                  className="p-2 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              )}
-            </div>
-
-            {!showPasswordForm ? (
-              <button
-                onClick={() => setShowPasswordForm(true)}
-                className="w-full flex items-center gap-3 px-4 py-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors text-sm font-medium"
-              >
-                <Lock className="w-4 h-4" />
-                <span>Change Password</span>
-              </button>
-            ) : (
-              <div className="space-y-4">
-                {/* Current Password */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground/80">Current Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-                    <input
-                      type="password"
-                      value={currentPassword}
-                      onChange={(e) => setCurrentPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="input-glass w-full pl-12"
-                    />
-                  </div>
-                </div>
-
-                {/* New Password */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground/80">New Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-                    <input
-                      type="password"
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="input-glass w-full pl-12"
-                    />
-                  </div>
-                </div>
-
-                {/* Confirm Password */}
-                <div className="space-y-2">
-                  <label className="text-sm font-medium text-foreground/80">Confirm Password</label>
-                  <div className="relative">
-                    <Lock className="absolute left-4 top-1/2 transform -translate-y-1/2 w-5 h-5 text-foreground/40" />
-                    <input
-                      type="password"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      placeholder="••••••••"
-                      className="input-glass w-full pl-12"
-                    />
-                  </div>
-                </div>
-
-                {/* Buttons */}
-                <div className="flex gap-3">
-                  <button
-                    onClick={handleChangePassword}
-                    disabled={saving}
-                    className="flex-1 btn-neon py-2 rounded-lg disabled:opacity-50"
-                  >
-                    {saving ? "Updating..." : "Update Password"}
-                  </button>
-                  <button
-                    onClick={() => setShowPasswordForm(false)}
-                    className="flex-1 btn-glass py-2 rounded-lg"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </GlassCard>
-
-        {/* Danger Zone */}
-        <GlassCard variant="dark" className="border-blue-500/20">
-          <div className="space-y-4">
-            <div>
-              <h2 className="text-xl font-bold text-blue-400">Danger Zone</h2>
-              <p className="text-sm text-foreground/60 mt-1">Irreversible actions</p>
-            </div>
-            <button
-              className="w-full px-4 py-3 rounded-lg border border-blue-500/50 text-blue-400 hover:bg-blue-500/10 transition-colors text-sm font-medium"
-              onClick={() =>
-                toast({
-                  title: "Delete account",
-                  description: "Contact support to delete your account.",
-                })
-              }
-            >
-              Delete Account
-            </button>
-          </div>
-        </GlassCard>
-        <FooterLinks />
-      </div>
-    </div>
-  );
+if (loading) {
+return (
+<div className="min-h-screen bg-background flex items-center justify-center">
+<div className="flex flex-col items-center gap-4">
+<div className="animate-spin rounded-full h-12 w-12 border border-neon-cyan border-t-transparent"></div>
+<div className="text-foreground/70 text-sm">Loading growth plan...</div>
+</div>
+</div>
+);
 }
 
+if (error || !data) {
+return (
+<div className="page-shell">
+<div className="max-w-3xl mx-auto space-y-6 px-3 sm:px-0">
+<GlassCard variant="dark" className="border-white/10">
+<h1 className="text-xl sm:text-2xl font-semibold mb-2">Growth Plan Unavailable</h1>
+<p className="text-foreground/70 text-sm sm:text-base mb-4">
+Complete onboarding to generate your personalized growth strategy.
+</p>
+<button onClick={() => navigate("/onboarding")} className="btn-neon px-4 py-2 rounded-lg text-sm">
+Complete Onboarding
+</button>
+</GlassCard>
+<FooterLinks />
+</div>
+</div>
+);
+}
+
+const plan = data.growthPlan;
+const roadmap = plan["90DayRoadmap"];
+
+const sections = [
+{ key: "positioningStrategy", title: "Positioning Strategy", value: plan.positioningStrategy },
+{ key: "monetizationPlan", title: "Monetization Plan", value: plan.monetizationPlan },
+{ key: "offerStructure", title: "Offer Structure", value: plan.offerStructure },
+{ key: "trafficStrategy", title: "Traffic Strategy", value: plan.trafficStrategy },
+{ key: "salesFunnel", title: "Sales Funnel", value: plan.salesFunnel },
+{ key: "biggestRisk", title: "Biggest Risk", value: plan.biggestRisk },
+{ key: "scalingStrategy", title: "Scaling Strategy", value: plan.scalingStrategy },
+];
+
+return (
+<div className="page-shell">
+<div className="max-w-5xl mx-auto space-y-5 sm:space-y-6 px-3 sm:px-0">
+<div className="space-y-2">
+<div className="eyebrow">AI Strategy</div>
+<h1 className="text-2xl sm:text-3xl font-semibold">Your Personalized Growth Plan</h1>
+<p className="text-foreground/60 text-xs sm:text-sm">
+Generated on {new Date(data.generatedAt).toLocaleString()}
+</p>
+</div>
+
+    {/* 90-Day Roadmap */}
+    <GlassCard variant="dark" className="border-white/10">
+      <h2 className="text-base sm:text-lg font-semibold mb-4">90-Day Roadmap</h2>
+      <div className="grid sm:grid-cols-3 gap-3 sm:gap-4">
+        {[
+          { label: "Month 1", tasks: roadmap.month1, color: "text-neon-cyan" },
+          { label: "Month 2", tasks: roadmap.month2, color: "text-neon-purple" },
+          { label: "Month 3", tasks: roadmap.month3, color: "text-green-400" },
+        ].map((month) => (
+          <div key={month.label} className="rounded-lg border border-white/10 bg-white/5 p-3 sm:p-4">
+            <div className={`text-xs sm:text-sm font-semibold mb-2 sm:mb-3 ${month.color}`}>{month.label}</div>
+            <ul className="space-y-1.5 sm:space-y-2">
+              {month.tasks.map((task, index) => (
+                <li key={index} className="text-xs sm:text-sm text-foreground/80 flex gap-2">
+                  <span className={`${month.color} mt-0.5 flex-shrink-0`}>•</span>
+                  <span>{task}</span>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+      </div>
+    </GlassCard>
+
+    {/* Plan Breakdown */}
+    <GlassCard variant="dark" className="border-white/10">
+      <h2 className="text-base sm:text-lg font-semibold mb-2">Plan Breakdown</h2>
+      <Accordion type="multiple">
+        {sections.map((section) => (
+          <AccordionItem key={section.key} value={section.key} className="border-white/10">
+            <AccordionTrigger className="text-left hover:no-underline text-sm sm:text-base">
+              {section.title}
+            </AccordionTrigger>
+            <AccordionContent className="text-foreground/80 leading-relaxed text-sm">
+              {section.value}
+            </AccordionContent>
+          </AccordionItem>
+        ))}
+
+        <AccordionItem value="dailyExecutionFramework" className="border-white/10">
+          <AccordionTrigger className="text-left hover:no-underline text-sm sm:text-base">
+            Daily Execution Framework
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-2">
+              {plan.dailyExecutionFramework.map((item, index) => (
+                <li key={index} className="text-foreground/80 flex gap-2 text-sm">
+                  <span className="text-neon-cyan flex-shrink-0">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+
+        <AccordionItem value="keyKPIs" className="border-white/10">
+          <AccordionTrigger className="text-left hover:no-underline text-sm sm:text-base">
+            Key KPIs
+          </AccordionTrigger>
+          <AccordionContent>
+            <ul className="space-y-2">
+              {plan.keyKPIs.map((item, index) => (
+                <li key={index} className="text-foreground/80 flex gap-2 text-sm">
+                  <span className="text-neon-purple flex-shrink-0">•</span>
+                  <span>{item}</span>
+                </li>
+              ))}
+            </ul>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
+    </GlassCard>
+
+    <FooterLinks />
+  </div>
+</div>
+
+);
+}

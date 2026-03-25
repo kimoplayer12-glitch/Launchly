@@ -430,7 +430,7 @@ export default function AutomationEditor() {
   if (loading) {
     return (
       <div className="page-shell">
-        <div className="clean-card p-6">Loading workflow…</div>
+        <div className="clean-card p-6">Loading workflow...</div>
       </div>
     );
   }

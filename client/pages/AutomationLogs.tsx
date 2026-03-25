@@ -116,7 +116,7 @@ export default function AutomationLogs() {
       <div className="grid lg:grid-cols-[320px_1fr] gap-4">
         <div className="clean-card p-4 space-y-3">
           <p className="text-sm font-semibold text-foreground">Executions</p>
-          {loading && <p className="text-foreground/60">Loading…</p>}
+          {loading && <p className="text-foreground/60">Loading...</p>}
           {!loading && executions.length === 0 && (
             <p className="text-foreground/60">No executions yet.</p>
           )}
